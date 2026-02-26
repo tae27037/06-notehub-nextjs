@@ -1,34 +1,52 @@
+"use client";
+
 import Link from "next/link";
-import css from "./NoteList.module.css";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { deleteNote } from "@/lib/api";
 import type { Note } from "@/types/note";
 
-type Props = {
-  notes: Note[];
-  onDelete?: (id: string) => void;
-};
+import css from "./NoteList.module.css";
 
-export default function NoteList({ notes, onDelete }: Props) {
+interface NoteListProps {
+  notes: Note[];
+}
+
+export default function NoteList({ notes }: NoteListProps) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+
   return (
     <ul className={css.list}>
       {notes.map((note) => (
         <li key={note.id} className={css.item}>
-          <h3 className={css.title}>{note.title}</h3>
-          <p className={css.tag}>{note.tag}</p>
+          <div className={css.header}>
+            <h3 className={css.title}>{note.title}</h3>
+            <p className={css.tag}>{note.tag}</p>
+          </div>
+
+          {/* ✅ обязательно показываем content */}
+          <p className={css.content}>{note.content}</p>
 
           <div className={css.actions}>
-            <Link className={css.detailsLink} href={`/notes/${note.id}`}>
+            <Link className={css.link} href={`/notes/${note.id}`}>
               View details
             </Link>
 
-            {onDelete && (
-              <button
-                className={css.deleteBtn}
-                type="button"
-                onClick={() => onDelete(note.id)}
-              >
-                Delete
-              </button>
-            )}
+            <button
+              type="button"
+              className={css.button}
+              onClick={() => mutation.mutate(note.id)}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Deleting..." : "Delete"}
+            </button>
           </div>
         </li>
       ))}

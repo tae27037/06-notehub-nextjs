@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { CreateNotePayload, FetchNotesResponse, Note } from "@/types/note";
+import type { CreateNotePayload, Note } from "@/types/note";
+import type { FetchNotesResponse } from "@/types/api";
 
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
@@ -35,6 +36,7 @@ export async function createNote(payload: CreateNotePayload): Promise<Note> {
   return data;
 }
 
-export async function deleteNote(id: string): Promise<void> {
-  await apiClient.delete(`/notes/${id}`);
+export async function deleteNote(id: string): Promise<Note> {
+  const { data } = await apiClient.delete<Note>(`/notes/${id}`);
+  return data;
 }
