@@ -1,5 +1,14 @@
-import { apiClient } from "./client";
+import axios from "axios";
 import type { CreateNotePayload, FetchNotesResponse, Note } from "@/types/note";
+
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+
+export const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_NOTEHUB_BASE_URL,
+  headers: {
+    Authorization: token ? `Bearer ${token}` : "",
+  },
+});
 
 export type FetchNotesParams = {
   page?: number;
