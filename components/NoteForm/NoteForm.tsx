@@ -22,17 +22,15 @@ const TAG_OPTIONS: NoteTag[] = [
   "Shopping",
 ];
 
-const validationSchema: Yup.ObjectSchema<NoteFormValues> = Yup.object({
+const validationSchema = Yup.object({
   title: Yup.string()
     .trim()
-    .min(2, "Too short")
-    .max(50, "Too long")
+    .min(3, "Title must be at least 3 characters")
     .required("Title is required"),
   content: Yup.string()
     .trim()
-    .min(2, "Too short")
-    .max(500, "Too long")
-    .required("Content is required"),
+    .max(500, "Content must be at most 500 characters")
+    .notRequired(),
   tag: Yup.mixed<NoteTag>()
     .oneOf(TAG_OPTIONS, "Invalid tag")
     .required("Tag is required"),
