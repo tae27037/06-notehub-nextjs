@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+"use client";
+
+import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import css from "./Modal.module.css";
 
@@ -7,10 +9,20 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-const modalRoot = document.body;
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {}, // subscribe (ничего не подписываем)
+    () => true, // snapshot на клиенте
+    () => false, // snapshot на сервере
+  );
+}
 
 export default function Modal({ onClose, children }: ModalProps) {
+  const isClient = useIsClient();
+
   useEffect(() => {
+    if (!isClient) return;
+
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -24,7 +36,9 @@ export default function Modal({ onClose, children }: ModalProps) {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [onClose]);
+  }, [isClient, onClose]);
+
+  if (!isClient) return null;
 
   return createPortal(
     <div
@@ -37,6 +51,6 @@ export default function Modal({ onClose, children }: ModalProps) {
     >
       <div className={css.modal}>{children}</div>
     </div>,
-    modalRoot,
+    document.body,
   );
 }
